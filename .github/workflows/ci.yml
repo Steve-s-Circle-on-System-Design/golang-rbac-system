@@ -43,8 +43,8 @@ jobs:
           cache: true
       - name: Run tests
         run: go test -v -race -cover ./...
-        
-    build:
+
+  build:
     name: Build
     runs-on: ubuntu-latest
     steps:
