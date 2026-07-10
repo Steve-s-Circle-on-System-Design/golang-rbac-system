@@ -20,3 +20,5 @@ what CI expects before a PR merges.
 | Events        | Go channels + worker goroutine (`internal/email`) |
 | File storage  | Cloudinary Go SDK (streamed, no temp files) |
 
+## Architecture
+![Architecture Diagram](./docs/rbac-system-arc.png)
