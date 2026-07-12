@@ -1,6 +1,10 @@
 package auth
 
 import (
+	"errors"
+	"log"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +19,32 @@ func NewHandler(authService Service) *Handler {
 }
 
 func (h *Handler) RegisterUser(c *gin.Context) {
+	var input RegisterWithPasswordRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
+	err := h.authService.RegisterWithPassword(c, input.Email, input.Password)
+	if err != nil {
+		log.Println("Error occured while trying to register user:", err)
+
+		if errors.Is(err, ErrUserWithEmailAlreadyExists) {
+			c.JSON(http.StatusConflict, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "User registered successfullly",
+	})
 }
 
 func (h *Handler) LoginUser(c *gin.Context) {

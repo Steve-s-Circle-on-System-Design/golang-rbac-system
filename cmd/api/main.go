@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/Steve-s-Circle-on-System-Design/golang-rbac-system/internal/initializers"
+	"github.com/Steve-s-Circle-on-System-Design/golang-rbac-system/internal/routes"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,6 +34,8 @@ func main() {
 		pool.Close() 
 		return 
 	}
+
+	routes.SetupRoutes(pool, router)
 
 	log.Println("Successfully connected to the database")
 

@@ -2,6 +2,16 @@ package auth
 
 import (
 	"context"
+	"errors"
+	"log"
+
+	"github.com/Steve-s-Circle-on-System-Design/golang-rbac-system/internal/user"
+	"github.com/jackc/pgx/v5"
+	"golang.org/x/crypto/bcrypt"
+)
+
+var (
+	ErrUserWithEmailAlreadyExists = errors.New("User with that email already exists")
 )
 
 type TokenPair struct {
@@ -12,53 +22,48 @@ type TokenPair struct {
 type Service interface {
 	RegisterWithPassword(ctx context.Context, email, password string) error
 	LoginWithPassword(ctx context.Context, email, password string) (*TokenPair, error)
-	LoginWithGoogle(ctx context.Context, googleToken string) (*TokenPair, error)
-	RequestMagicOTP(ctx context.Context, email string) error
-	VerifyMagicOTP(ctx context.Context, email, otp string) (*TokenPair, error)
-	VerifyEmail(ctx context.Context, token string) error
-	RequestPasswordReset(ctx context.Context, email string) error
-	ResetPassword(ctx context.Context, token, newPassword string) error
-	RefreshToken(ctx context.Context, refreshToken string) (*TokenPair, error)
-	Logout(ctx context.Context, refreshToken string) error
 }
 
 type authService struct {
-	userRepository Repository
+	userRepository user.Repository
 }
 
-func NewService(userRepository Repository) Service {
+func NewService(userRepository user.Repository) Service {
 	return &authService{
 		userRepository: userRepository,
 	}
 }
 
-func (s *authService) RegisterWithPassword(ctx context.Context, email, password string) error            {
+func (s *authService) RegisterWithPassword(ctx context.Context, email, password string) error {
+	existingUser, err := s.userRepository.FindByEmail(ctx, email)
+
+	if err != nil {
+		if !errors.Is(err, pgx.ErrNoRows) {
+			log.Println("failed to check existing user:", err)
+			return err
+		}
+		existingUser = nil
+	}
+
+	if existingUser != nil {
+		return ErrUserWithEmailAlreadyExists
+	}
+	// Hash password
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Println("Something went wrong while hashing the password", err.Error())
+		return err
+	}
+	newUser := &user.User{
+		Email:        email,
+		PasswordHash: string(passwordHash),
+	}
+	err = s.userRepository.Create(ctx, newUser)
+	if err != nil {
+		log.Println("Something went wrong while trying to save the new user in the db", err.Error())
+	}
 	return nil
 }
 func (s *authService) LoginWithPassword(ctx context.Context, email, password string) (*TokenPair, error) {
 	return nil, nil
-}
-func (s *authService) LoginWithGoogle(ctx context.Context, googleToken string) (*TokenPair, error)       {
-	return nil, nil
-}
-func (s *authService) RequestMagicOTP(ctx context.Context, email string) error                           {
-	return nil
-}
-func (s *authService) VerifyMagicOTP(ctx context.Context, email, otp string) (*TokenPair, error)         {
-	return nil, nil
-}
-func (s *authService) VerifyEmail(ctx context.Context, token string) error                               {
-	return nil
-}
-func (s *authService) RequestPasswordReset(ctx context.Context, email string) error                      {
-	return nil
-}
-func (s *authService) ResetPassword(ctx context.Context, token, newPassword string) error                {
-	return nil
-}
-func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*TokenPair, error)         {
-	return nil, nil 
-}
-func (s *authService) Logout(ctx context.Context, refreshToken string) error                             {
-	return nil
 }
