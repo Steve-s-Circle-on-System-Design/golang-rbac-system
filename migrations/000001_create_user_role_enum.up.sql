@@ -1,5 +1,0 @@
-BEGIN;
-
-CREATE TYPE user_role AS ENUM ('USER', 'ADMIN');
-
-COMMIT;
