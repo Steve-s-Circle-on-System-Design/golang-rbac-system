@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -40,8 +39,7 @@ func main() {
 	routes.SetupRoutes(pool, router)
 
 	log.Println("Successfully connected to the database")
-	cleanAddr := strings.NewReplacer("\r", "", "\n", "").Replace(addr)
-	log.Println("server listening on", cleanAddr)
+	log.Printf("server listening on: %q", addr)
 
 	if err := router.Run(addr); err != nil {
 		log.Fatalf("server failed: %v", err)
