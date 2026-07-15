@@ -6,9 +6,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/gin-gonic/gin"
+
 	"github.com/Steve-s-Circle-on-System-Design/golang-rbac-system/internal/initializers"
 	"github.com/Steve-s-Circle-on-System-Design/golang-rbac-system/internal/routes"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
