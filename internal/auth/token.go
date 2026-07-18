@@ -20,10 +20,10 @@ var (
 
 // claims inserted in a short lived access token
 type AccessTokenClaims struct {
-	UserID uuid.UUID `json:"uuid"`
-	Role   string    `json:"role"`
-
 	jwt.RegisteredClaims
+
+	Role   string    `json:"role"`
+	UserID uuid.UUID `json:"uuid"`
 }
 
 // JWTConfig holds all config required to issue and validate tokesn
